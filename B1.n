@@ -1,0 +1,153 @@
+bgCol = [ 0.12156862765550613, 0.11764705926179886, 0.12156862765550613, 1.0 ]
+btnActiveCol = [ 0.9372549057006836, 0.2862745225429535, 0.3450980484485626, 1.0 ]
+btnHoverCol = [ 0.6784313917160034, 0.21568627655506134, 0.2549019753932953, 1.0 ]
+childCol = [ 0.12941177189350128, 0.13333334028720856, 0.1764705926179886, 1.0 ]
+childCol1 = [ 0.14901961386203766, 0.15294118225574493, 0.19607843458652496, 1.0 ]
+frameCol = [ 0.1725490242242813, 0.16862745583057404, 0.1725490242242813, 1.0 ]
+hoverCol = [ 0.14509804546833038, 0.1411764770746231, 0.14509804546833038, 1.0 ]
+itemActiveCol = [ 0.9411764740943909, 0.19607843458652496, 0.25882354378700256, 1.0 ]
+itemCol = [ 0.9411764740943909, 0.29019609093666077, 0.3450980484485626, 1.0 ]
+notSelectedTextColor = [ 0.5490196347236633, 0.5490196347236633, 0.5490196347236633, 1.0 ]
+resizeGripCol = [ 0.8627451062202454, 0.19607843458652496, 0.25882354378700256, 0.47058823704719543 ]
+resizeGripHoverCol = [ 0.9803921580314636, 0.19607843458652496, 0.25882354378700256, 0.5490196347236633 ]
+textCol = [ 1.0, 1.0, 1.0, 1.0 ]
+winCol = [ 0.0, 0.0, 0.0, 0.9019607901573181 ]
+
+[AutoEvo]
+AutoEvo = false
+DigimonID = 0
+EvoType = 4
+UseDigimonID = false
+
+[AutoFarm]
+AttackBack = false
+AutoFarm = true
+AutoReturnPosition = false
+BossPriorize = false
+ForceChannel = -1
+HuntPositions = []
+HuntRange = 10000
+LootRange = 10000
+MemorizeMobPositions = false
+MonsterIndexes = []
+Monsters = []
+NoAnimation = false
+ReturnMap = 0
+ReturnPosition = [ 2.7599414033955867e-40, 8.596268792516905e-38, 1.693019657589186e-37 ]
+TamerSpotChangeCH = false
+TamerSpotChangeCHSleepTime = 10
+TamerSpotNames = []
+UnderHit = false
+UseF1 = false
+UseF2 = false
+UseF3 = false
+UseF4 = false
+UseF5 = false
+UseHuntPositions = false
+UseOnlySkills = false
+UseTamerF1 = true
+UseTamerF2 = false
+UseTamerF3 = false
+UseTamerF4 = false
+UseTamerF5 = false
+
+[AutoHeal]
+AutoFatigueCity = true
+AutoHeal = true
+DigiDSPerc_1 = 35
+DigiDSPerc_2 = 90
+DigiDSQuickSlot_1 = 71103
+DigiDSQuickSlot_2 = 0
+DigiDS_1 = false
+DigiDS_2 = false
+DigiHPPerc_1 = 65
+DigiHPPerc_2 = 30
+DigiHPQuickSlot_1 = 71103
+DigiHPQuickSlot_2 = 71127
+DigiHP_1 = false
+DigiHP_2 = false
+FatigueCity = 0
+FatigueCityPerc = 99
+FatigueLogout = false
+FatiguePerc = 90
+FatigueQuickSlot = 0
+TamerDSPerc_1 = 25
+TamerDSPerc_2 = 90
+TamerDSQuickSlot_1 = 71103
+TamerDSQuickSlot_2 = 0
+TamerDS_1 = true
+TamerDS_2 = false
+TamerFatigue = false
+TamerHPPerc_1 = 60
+TamerHPPerc_2 = 90
+TamerHPQuickSlot_1 = 71103
+TamerHPQuickSlot_2 = 0
+TamerHP_1 = true
+TamerHP_2 = false
+TamerXG = true
+TamerXGQuickSlot = 75449
+TamerXGVal = 100
+
+[AutoLogin]
+AutoLogin = true
+Password = 'Support123'
+Password2 = '004603'
+Server = 7
+TamerSlot = 1
+Username = 'queen101'
+
+[AutoLoot]
+AutoLoot = true
+Items = [ 131006, 47323, 47324, 130066, 130285 ]
+LootBits = true
+LootMode = 1
+
+[AutoQuest]
+AutoQuest = false
+AutoQuestIDs = []
+
+[Automations]
+AutoBuff = false
+AutoBuffBuffClasses = []
+AutoBuffOnlyDG = false
+AutoBuyDisk = false
+AutoBuyDiskCount = 500
+AutoBuyDiskID = 21607
+AutoDG = 0
+AutoDGAttackDurLure = true
+AutoDGFullPartyOnly = false
+AutoDGHPThreshold = 100
+AutoDGReEnterDelay = 1.0
+AutoDGReenter = true
+AutoDGRotation = true
+AutoDGRunCount = 1
+AutoDGStart = false
+AutoDGUnlimitedRun = false
+AutoDrop = false
+AutoDropItemIDs = []
+AutoDropMinSlot = 0
+AutoParty = false
+AutoPartyLeader = false
+AutoPartyNames = []
+AutoReturn = false
+AutoReturnItemIDs = []
+AutoReturnMinSlot = 0
+SendMailItems = []
+
+[Misc]
+DisableRender = false
+FakeTamerName = ''
+ForceInterfaceOff = false
+FrameSkip = 2
+LuaAutoRunScript = ''
+NoCollision = true
+QuickChannelChange = false
+SocksAddr = ''
+SocksPassword = ''
+SocksPort = 0
+SocksUsername = ''
+UseFakeTamerName = false
+UseFrameSkip = false
+UseJumpGate = true
+UseSocks = false
+UseSocksAuth = false
