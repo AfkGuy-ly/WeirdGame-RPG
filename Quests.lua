@@ -18,7 +18,7 @@ function SafeCall(fn, ...)
 end
 
 function CheckFileIsLandProgress()
-	local finalQuestId = 1034 -- Preparation for Revenge
+	local finalQuestId = 1032 -- Preparation for Revenge
 	local hasCompleted = IsQuestComplete(finalQuestId)
 	if not hasCompleted then
 		if WaitForMap() then
@@ -81,7 +81,9 @@ function CheckOnCurrentQuest()
 				{x = 19788, y = 20331},
 				{x = 19810, y = 14567},
 			}
+			SafeCall(AutoQuestToggle, false)
 			FarmItem(items, digimons, nil, huntPositions)
+			SafeCall(AutoQuestToggle, true)
 		end,
 	}
 	for questId, handler in pairs(quests) do
@@ -121,15 +123,15 @@ function FarmItem(ItemsToFarm, DigimonsToKill, StartPosition, HuntPositions)
 		if StartPosition ~= nil then
 			-- Move to StartPosition
 		end
+		-- Check if currently using whitelist to add all itemstofarm & location
 		if HuntPositions ~= nil then
 			AutoFarmClearHuntPositions()
 			Sleep(1)
-			AutoFarmUseHuntPositionsToggle(true)
+			AutoFarmToggleUseHuntPositions(true)
 			for _, position in ipairs(HuntPositions) do
 				AutoFarmAddHuntPosition(position.x, position.y)
             end
         end
-		SafeCall(AutoFarmUseHuntPositionsToggle, true)
 		SafeCall(AutoFarmSetHuntRange, 9500)
 		SafeCall(AutoFarmToggle, true)
 		while ScriptRun() do
@@ -145,20 +147,12 @@ function FarmItem(ItemsToFarm, DigimonsToKill, StartPosition, HuntPositions)
             LogMessage("All required items have been collected!")
 			SafeCall(AutoFarmToggle, false)
 			if HuntPositions ~= nil then
-				SafeCall(AutoFarmUseHuntPositionsToggle, false)
+				SafeCall(AutoFarmToggleUseHuntPositions, false)
 			end
             break
         end
-        Sleep(5)  -- Wait before checking again
+        Sleep(15)  -- Wait before checking again
     end
-		Sleep(10)
-		if GetItemQuantity(SummonItem) > 0 then
-			SafeCall(AutoBoxToggle, true)
-			SafeCall(AutoBoxSetBoxID, SummonItem)
-			Sleep(1)
-		end
-		Sleep(60)
-		SafeCall(AutoFarmToggle, false)
 	end
 end
 
@@ -206,4 +200,16 @@ function main()
     ScriptStop()
 end
 
-main()
+local function handler(err)
+    LogMessage("Error caught: " .. tostring(err))
+    Cleanup()
+end
+
+function Cleanup()
+    LogMessage("Performing cleanup before shutdown...")
+    AutoQuestToggle(false)
+    AutoFarmToggle(false)
+end
+
+xpcall(main, handler)
+Cleanup() 
