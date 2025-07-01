@@ -73,7 +73,7 @@ function CheckOnCurrentQuest()
 		[1032] = function()
 			LogMessage("[FILE ISLAND] Assisting with Quest 1034: Preparation for revenge!")
 			local items = {
-				{ itemId = 80680, quantity = 20 }
+				{ itemId = 80680, name = "Imperfect Black Cogwheels", quantity = 20 }
 			}
 			local digimons = { 51619, 40289, 41027, 50444 }
 			local huntPositions = {
@@ -134,13 +134,17 @@ function FarmItem(ItemsToFarm, DigimonsToKill, StartPosition, HuntPositions)
         end
 		SafeCall(AutoFarmSetHuntRange, 9500)
 		SafeCall(AutoFarmToggle, true)
+		local lastQuantities = {}
 		while ScriptRun() do
         local allItemsReady = true
         for _, item in ipairs(ItemsToFarm) do
             local currentQty = GetItemQuantity(item.itemId)
             if currentQty < item.quantity then
                 allItemsReady = false
-                LogMessage("Item " .. item.itemId .. " progress: " .. currentQty .. "/" .. item.quantity)
+            end
+			 if lastQuantities[item.itemId] ~= currentQty then
+                LogMessage("Item [" .. item.name .. "] Progress: " .. currentQty .. "/" .. item.quantity)
+                lastQuantities[item.itemId] = currentQty
             end
         end
         if allItemsReady then
