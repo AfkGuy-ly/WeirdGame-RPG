@@ -18,16 +18,43 @@ function SafeCall(fn, ...)
 end
 
 function CheckFileIsLandProgress()
-	local finalQuestId = 1032 -- Preparation for Revenge
-	local hasCompleted = IsQuestComplete(finalQuestId)
-	if not hasCompleted then
-		if WaitForMap() then
-			SafeCall(AutoQuestAddQuest, finalQuestId)
-			SafeCall(AutoQuestToggle, true)
-			CheckOnCurrentQuest()
+	local allCompleted = true
+	local quests = { 1032, 1033, 1035 }
+	for _, questId in ipairs(quests) do
+		if not IsQuestComplete(questId) then
+			allCompleted = false
+			if WaitForMap() then
+				SafeCall(AutoQuestAddQuest, questId)
+			end
 		end
 	end
-	return hasCompleted
+	if WaitForMap() then
+		SafeCall(AutoQuestToggle, true)
+	end
+	if not allCompleted then
+		CheckOnCurrentQuest()
+	end
+	return allCompleted
+end
+
+function CheckServerContinentProgress()
+	local allCompleted = true
+	local quests = { 1071, 1265, 1266  }
+	for _, questId in ipairs(quests) do
+		if not IsQuestComplete(questId) then
+			allCompleted = false
+			if WaitForMap() then
+				SafeCall(AutoQuestAddQuest, questId)
+			end
+		end
+	end
+	if WaitForMap() then
+		SafeCall(AutoQuestToggle, true)
+	end
+	if not allCompleted then
+		CheckOnCurrentQuest()
+	end
+	return allCompleted
 end
 
 function CheckEventQuests()
@@ -124,6 +151,9 @@ function FarmItem(ItemsToFarm, DigimonsToKill, StartPosition, HuntPositions)
 			-- Move to StartPosition
 		end
 		-- Check if currently using whitelist to add all itemstofarm & location
+		AutoLootToggle(true)
+		AutoLootToggleLootBits(true)
+		-- 
 		if HuntPositions ~= nil then
 			AutoFarmClearHuntPositions()
 			Sleep(1)
@@ -176,8 +206,8 @@ function main()
     end
 
     local questGroups = {
-        {name = "File Island", checkFn = CheckFileIsLandProgress},
-        {name = "Daily Event", checkFn = CheckEventQuests},
+        {name = "[File Island]", checkFn = CheckFileIsLandProgress},
+        {name = "[Daily Event]", checkFn = CheckEventQuests},
     }
 
     local currentGroupIndex = 1
@@ -189,7 +219,6 @@ function main()
 
         local group = questGroups[currentGroupIndex]
         local completed = group.checkFn()
-
         if completed then
             LogMessage(group.name .. ": Quests Are Completed!")
             currentGroupIndex = currentGroupIndex + 1
