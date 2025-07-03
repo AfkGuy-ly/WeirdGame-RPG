@@ -362,6 +362,7 @@ local function _ServerContinentHandleQuest()
 			Sleep(5)
 		end,
 		[1306] = function()
+			--BUGGED UNABLE TO USE ITEM HERE WILL HAVE TO FIND ANOTHERWAY AROUND
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Twinkling Kido!")
 			QuestHelper.UseItem(80743, nil, nil, nil, 1306)
 			Sleep(5)
@@ -396,7 +397,7 @@ end
 
 function ServerContinentQuest.CheckProgress()
 	local allCompleted = true
-	local quests = { 1071, 1265, 1266, 1421 }
+	local quests = { 1071, 1265, 1266, 1421, 3412 }
 	for _, questId in ipairs(quests) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
@@ -414,6 +415,103 @@ function ServerContinentQuest.CheckProgress()
 	return allCompleted
 end
 
+---------------------------------------------
+-- 🔹 ShinjukuQuest Functions Section
+---------------------------------------------
+local ShinjukuQuest = {}
+local function _ShinjukuHandleQuest()
+	local quests = {
+		[7015] = function()
+			LogHelper.LogMessage("[FILE ISLAND] Assisting with Quest 7015: Wake Up, Leomon!")
+			QuestHelper.SummonBoss(154003, 99100, nil, nil, true)
+			Sleep(5)
+		end,
+	}
+	for questId, handler in pairs(quests) do
+		if BotHelper.IsQuestOnGoing(questId) then
+			handler()
+		end
+	end
+end
+
+function ShinjukuQuest.CheckPartOneProgress()
+	local allCompleted = true
+	local quests = { 4614 }
+	for _, questId in ipairs(quests) do
+		if not BotHelper.IsQuestComplete(questId) then
+			allCompleted = false
+			if UtilityHelper.WaitForMap() then
+				UtilityHelper.SafeCall(BotHelper.AutoQuestAddQuest, questId)
+			end
+		end
+	end
+	if UtilityHelper.WaitForMap() then
+		UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
+	end
+	if not allCompleted then
+		_ShinjukuHandleQuest()
+	end
+	return allCompleted
+end
+
+function ShinjukuQuest.CheckPartTwoProgress()
+	local allCompleted = true
+	local quests = { 4633 }
+	for _, questId in ipairs(quests) do
+		if not BotHelper.IsQuestComplete(questId) then
+			allCompleted = false
+			if UtilityHelper.WaitForMap() then
+				UtilityHelper.SafeCall(BotHelper.AutoQuestAddQuest, questId)
+			end
+		end
+	end
+	if UtilityHelper.WaitForMap() then
+		UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
+	end
+	if not allCompleted then
+		_ShinjukuHandleQuest()
+	end
+	return allCompleted
+end
+
+---------------------------------------------
+-- 🔹 OdaibaQuest Functions Section
+---------------------------------------------
+local OdaibaQuest = {}
+local function _OdaibaHandleQuest()
+	local quests = {
+		[7015] = function()
+			LogHelper.LogMessage("[FILE ISLAND] Assisting with Quest 7015: Wake Up, Leomon!")
+			QuestHelper.SummonBoss(154003, 99100, nil, nil, true)
+			Sleep(5)
+		end,
+	}
+	for questId, handler in pairs(quests) do
+		if BotHelper.IsQuestOnGoing(questId) then
+			handler()
+		end
+	end
+end
+
+function OdaibaQuest.CheckProgress()
+	local allCompleted = true
+	local quests = { 4014 }
+	for _, questId in ipairs(quests) do
+		if not BotHelper.IsQuestComplete(questId) then
+			allCompleted = false
+			if UtilityHelper.WaitForMap() then
+				UtilityHelper.SafeCall(BotHelper.AutoQuestAddQuest, questId)
+			end
+		end
+	end
+	if UtilityHelper.WaitForMap() then
+		UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
+	end
+	if not allCompleted then
+		_OdaibaHandleQuest()
+	end
+	return allCompleted
+end
 
 ---------------------------------------------
 -- 🔹 EventQuest Functions Section
@@ -484,21 +582,21 @@ function main()
 			tamerLevel = 70,
 			checkFn = ServerContinentQuest.CheckProgress,
 		},
-		--{
-		--	name = "[Shinjuku Part 1]",
-		--	tamerLevel = 70,
-		--	checkFn = EventQuest.CheckProgress,
-		--},
-		--{
-		--	name = "[Odaiba]",
-		--	tamerLevel = 80,
-		--	checkFn = EventQuest.CheckProgress,
-		--},
-		--{
-		--	name = "[Shinjuku Part 2]",
-		--	tamerLevel = 90,
-		--	checkFn = EventQuest.CheckProgress,
-		--},
+		{
+			name = "[Shinjuku Part 1]",
+			tamerLevel = 70,
+			checkFn = ShinjukuQuest.CheckPartOneProgress,
+		},
+		{
+			name = "[Odaiba]",
+			tamerLevel = 80,
+			checkFn = OdaibaQuest.CheckProgress,
+		},
+		{
+			name = "[Shinjuku Part 2]",
+			tamerLevel = 90,
+			checkFn = ShinjukuQuest.CheckPartTwoProgress,
+		},
 		--{
 		--	name = "[Spiral Mountain]",
 		--	tamerLevel = 90,
