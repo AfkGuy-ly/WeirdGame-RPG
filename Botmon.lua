@@ -223,6 +223,7 @@ function QuestHelper.MoveTo(TargetX, TargetY, MapId, QuestId)
 		while hasNotArrived do
 			local pos = BotHelper.GetTamer():Position()
 			local distance = math.sqrt((pos.x - TargetX)^2 + (pos.y - TargetY)^2)
+			UtilityHelper.SafeCall(BotHelper.MoveTo, TargetX, TargetY)
 			---- Check if quest is still ongoing
 			if not BotHelper.IsQuestOnGoing(QuestId) then
 				LogHelper.LogMessage("Quest 1324 no longer ongoing, stopping wait.")
