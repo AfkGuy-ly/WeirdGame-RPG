@@ -336,7 +336,7 @@ function FileIslandQuest.CheckProgress()
 end
 
 ---------------------------------------------
--- 🔹 FileIslandQuest Functions Section
+-- 🔹 ServerContinentQuest Functions Section
 ---------------------------------------------
 local ServerContinentQuest = {}
 local function _ServerContinentHandleQuest()
@@ -421,9 +421,12 @@ end
 local ShinjukuQuest = {}
 local function _ShinjukuHandleQuest()
 	local quests = {
-		[7015] = function()
-			LogHelper.LogMessage("[FILE ISLAND] Assisting with Quest 7015: Wake Up, Leomon!")
-			QuestHelper.SummonBoss(154003, 99100, nil, nil, true)
+		[4503] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(17465, 33281, 0, 4503)
+			QuestHelper.MoveTo(24450, 33973, 0, 4503)
+			QuestHelper.MoveTo(42200, 29583, 0, 4503)
+			QuestHelper.MoveTo(36680, 17075, 0, 4503)
 			Sleep(5)
 		end,
 	}
