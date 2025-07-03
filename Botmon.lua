@@ -119,7 +119,7 @@ local UtilityHelper = {}
 
 function UtilityHelper.WaitForMap(maxWait)
 	local waited = 0
-	maxWait = maxWait or 30
+	maxWait = maxWait or 10
 	while not BotHelper.IsInMap() and waited < maxWait do
 		LogHelper.LogMessage("Waiting for map to load...")
 		Sleep(3)
@@ -277,11 +277,16 @@ end
 local ServerContinentQuest = {}
 local function _ServerContinentHandleQuest()
 	local quests = {
-		[70150] = function()
-			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest 7015: Wake Up, Leomon!")
-			QuestHelper.SummonBoss(154003, 99100, nil, nil, true)
+		[1289] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Battle Etemon!")
+			QuestHelper.SummonBoss(154005, 99102, nil, nil, true)
 			Sleep(5)
 		end,
+		--[1276] = function()
+		--	LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest 7015: Wake Up, Leomon!")
+		--	--MoveToLocation
+		--	Sleep(5)
+		--end,
 	}
 	for questId, handler in pairs(quests) do
 		if BotHelper.IsQuestOnGoing(questId) then
@@ -292,7 +297,7 @@ end
 
 function ServerContinentQuest.CheckProgress()
 	local allCompleted = true
-	local quests = { 1071, 1265, 1266 }
+	local quests = { 1071, 1265, 1266, 1421 }
 	for _, questId in ipairs(quests) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
