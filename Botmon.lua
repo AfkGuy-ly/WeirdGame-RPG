@@ -5,7 +5,7 @@ local ServerContinentQuest = require("Quests.ServerContinentQuest")
 local EventQuest = require("Quests.EventQuest")
 local UtilityHelper = require("Helpers.UtilityHelper")
 
-local function main()
+function main()
     local tamer = BotHelper.GetTamer()
     local level = tamer:Level()
     local questGroups = {
@@ -83,12 +83,12 @@ local function main()
     end
 end
 
-local function handler(err)
+function handler(err)
     LogHelper.LogMessage("Error caught: " .. tostring(err))
     Cleanup()
 end
 
-local function Cleanup()
+function Cleanup()
     LogHelper.LogMessage("Performing cleanup before shutdown...")
 	UtilityHelper.SafeCall(BotHelper.AutoFarmToggle, false)
 	UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, false)
