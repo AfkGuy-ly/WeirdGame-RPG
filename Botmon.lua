@@ -35,6 +35,10 @@ function BotHelper.AutoFarmToggle(state)
 	return AutoFarmToggle(state)
 end
 
+function BotHelper.AutoFarmToggleUseHuntPositions(state)
+	return AutoFarmToggleUseHuntPositions(state)
+end
+
 function BotHelper.AutoQuestAddQuest(questId)
 	return AutoQuestAddQuest(questId)
 end
