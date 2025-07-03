@@ -362,6 +362,11 @@ local function _ServerContinentHandleQuest()
 			QuestHelper.UseItem(80743, nil, nil, nil, 1306)
 			Sleep(5)
 		end,
+		[1307] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Twinkling Kido!")
+			QuestHelper.MoveTo(80697, 15189, 0, 1307)
+			Sleep(5)
+		end,
 		[1416] = function()
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Clash With Etemon!")
 			QuestHelper.MoveTo(31999, 15893, 0, 1416)
