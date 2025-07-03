@@ -316,7 +316,7 @@ local function _ServerContinentHandleQuest()
 		end,
 		[1276] = function()
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest 7015: Wake Up, Leomon!")
-			QuestHelper.MoveTo(25185, 20211, 0)
+			QuestHelper.MoveTo(25185, 20211, 0, 1276)
 			Sleep(5)
 		end,
 	}
