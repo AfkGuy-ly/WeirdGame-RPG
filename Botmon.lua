@@ -11,6 +11,10 @@ function BotHelper.GetTamer()
 	return GetTamer()
 end
 
+function BotHelper.MoveTo(x, y)
+	return GoToPosition(x, y)
+end
+
 function BotHelper.AutoFarmClearMonsters()
 	return AutoFarmClearMonsters()
 end
@@ -211,6 +215,29 @@ function QuestHelper.FarmItem(ItemsToFarm, DigimonsToKill, StartPosition, HuntPo
 	end
 end
 
+function QuestHelper.MoveTo(TargetX, TargetY, MapId, QuestId)
+	if UtilityHelper.WaitForMap() then
+		--Check If Map Is Correct
+		UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
+		local hasNotArrived = true
+		while hasNotArrived do
+			local pos = BotHelper.GetTamer():Position()
+			local distance = math.sqrt((pos.x - TargetX)^2 + (pos.y - TargetY)^2)
+			---- Check if quest is still ongoing
+			if not BotHelper.IsQuestOnGoing(QuestId) then
+				LogHelper.LogMessage("Quest 1324 no longer ongoing, stopping wait.")
+				break
+			end
+			if distance <= 10 then
+				hasNotArrived = false
+				break
+			end
+			Sleep(1)
+		end
+		UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
+	end
+end
+
 
 ---------------------------------------------
 -- 🔹 FileIslandQuest Functions Section
@@ -287,11 +314,11 @@ local function _ServerContinentHandleQuest()
 			QuestHelper.SummonBoss(154007, 99104, nil, nil, true)
 			Sleep(5)
 		end,
-		--[1276] = function()
-		--	LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest 7015: Wake Up, Leomon!")
-		--	--MoveToLocation
-		--	Sleep(5)
-		--end,
+		[1276] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest 7015: Wake Up, Leomon!")
+			QuestHelper.MoveTo(25185, 20211, 0)
+			Sleep(5)
+		end,
 	}
 	for questId, handler in pairs(quests) do
 		if BotHelper.IsQuestOnGoing(questId) then
