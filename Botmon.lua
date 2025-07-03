@@ -262,6 +262,7 @@ function QuestHelper.UseItem(ItemId, TargetX, TargetY, MapId, QuestId)
 			end
 			UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
 		end
+		LogHelper.LogMessage("Quantity: " .. BotHelper.GetItemQuantity(ItemId))
 		if BotHelper.GetItemQuantity(ItemId) > 0 then
 			UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, true)
 			UtilityHelper.SafeCall(BotHelper.AutoBoxSetBoxID, ItemId)
@@ -359,6 +360,12 @@ local function _ServerContinentHandleQuest()
 		[1306] = function()
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Twinkling Kido!")
 			QuestHelper.UseItem(80743, nil, nil, nil, 1306)
+			Sleep(5)
+		end,
+		[1416] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Clash With Etemon!")
+			QuestHelper.MoveTo(31999, 15893, 0, 1416)
+			QuestHelper.SummonBoss(80793, 45346, nil, nil, true)
 			Sleep(5)
 		end,
 	}
