@@ -15,8 +15,16 @@ function BotHelper.AutoFarmClearMonsters()
 	return AutoFarmClearMonsters()
 end
 
+function BotHelper.AutoFarmClearHuntPositions()
+	return AutoFarmClearHuntPositions()
+end
+
 function BotHelper.AutoFarmAddMonster(monsterId)
 	return AutoFarmAddMonster(monsterId)
+end
+
+function BotHelper.AutoFarmAddHuntPosition(x,y)
+	return AutoFarmAddHuntPosition(x,y)
 end
 
 function BotHelper.AutoFarmSetHuntRange(range)
@@ -160,9 +168,8 @@ function QuestHelper.FarmItem(ItemsToFarm, DigimonsToKill, StartPosition, HuntPo
 			-- Move to StartPosition
 		end
 		-- Check if currently using whitelist to add all itemstofarm & location
-
-		UtilityHelper.SafeCall(BotHelper.AutoLootToggle, true)
-		UtilityHelper.SafeCall(BotHelper.AutoLootToggleLootBits, true)
+		--UtilityHelper.SafeCall(BotHelper.AutoLootToggle, true)
+		--UtilityHelper.SafeCall(BotHelper.AutoLootToggleLootBits, true)
 		--
 		if HuntPositions ~= nil then
 			UtilityHelper.SafeCall(BotHelper.AutoFarmClearHuntPositions)
@@ -209,12 +216,12 @@ local function _FileIslandHandleQuest()
 	local quests = {
 		[7015] = function()
 			LogHelper.LogMessage("[FILE ISLAND] Assisting with Quest 7015: Wake Up, Leomon!")
-			QuestHelper.SummonBoss(154003, 99100, true)
+			QuestHelper.SummonBoss(154003, 99100, nil, nil, true)
 			Sleep(5)
 		end,
 		[7034] = function()
 			LogHelper.LogMessage("[FILE ISLAND] Assisting with Quest 7034: Final Battle: Monochromon!")
-			QuestHelper.SummonBoss(154004, 99101, true)
+			QuestHelper.SummonBoss(154004, 99101, nil, nil, true)
 			Sleep(5)
 		end,
 		[1032] = function()
@@ -268,7 +275,7 @@ local function _ServerContinentHandleQuest()
 	local quests = {
 		[70150] = function()
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest 7015: Wake Up, Leomon!")
-			QuestHelper.SummonBoss(154003, 99100, true)
+			QuestHelper.SummonBoss(154003, 99100, nil, nil, true)
 			Sleep(5)
 		end,
 	}
