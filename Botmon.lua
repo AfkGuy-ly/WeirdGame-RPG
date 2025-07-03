@@ -282,6 +282,11 @@ local function _ServerContinentHandleQuest()
 			QuestHelper.SummonBoss(154005, 99102, nil, nil, true)
 			Sleep(5)
 		end,
+		[1324] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Desert In Danger!")
+			QuestHelper.SummonBoss(154007, 99104, nil, nil, true)
+			Sleep(5)
+		end,
 		--[1276] = function()
 		--	LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest 7015: Wake Up, Leomon!")
 		--	--MoveToLocation
