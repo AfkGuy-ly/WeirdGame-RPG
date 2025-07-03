@@ -271,6 +271,10 @@ function QuestHelper.UseItem(ItemId, TargetX, TargetY, MapId, QuestId)
 	end
 end
 
+function QuestHelper.EnterDG(Id)
+
+end
+
 
 ---------------------------------------------
 -- 🔹 FileIslandQuest Functions Section
@@ -363,7 +367,7 @@ local function _ServerContinentHandleQuest()
 			Sleep(5)
 		end,
 		[1307] = function()
-			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Twinkling Kido!")
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Collosium!")
 			QuestHelper.MoveTo(80697, 15189, 0, 1307)
 			Sleep(5)
 		end,
@@ -371,6 +375,15 @@ local function _ServerContinentHandleQuest()
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Clash With Etemon!")
 			QuestHelper.MoveTo(31999, 15893, 0, 1416)
 			QuestHelper.SummonBoss(80793, 45346, nil, nil, true)
+			Sleep(5)
+		end,
+		[1417] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Nano Maze!")
+			Sleep(5)
+		end,
+		[1420] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Final Battle with Etemon!")
+			QuestHelper.SummonBoss(154008, 99105, nil, nil, true)
 			Sleep(5)
 		end,
 	}
