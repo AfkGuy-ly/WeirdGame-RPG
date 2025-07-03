@@ -397,7 +397,7 @@ end
 
 function ServerContinentQuest.CheckProgress()
 	local allCompleted = true
-	local quests = { 1071, 1265, 1266, 1421, 3412 }
+	local quests = { 1071, 1265, 1266, 1421, 3411 }
 	for _, questId in ipairs(quests) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
