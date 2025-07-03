@@ -239,6 +239,37 @@ function QuestHelper.MoveTo(TargetX, TargetY, MapId, QuestId)
 	end
 end
 
+function QuestHelper.UseItem(ItemId, TargetX, TargetY, MapId, QuestId)
+	if UtilityHelper.WaitForMap() then
+		if TargetX ~= nil or TargetX ~=nil then
+			--Check If Map Is Correct
+			UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
+			local hasNotArrived = true
+			while hasNotArrived do
+				local pos = BotHelper.GetTamer():Position()
+				local distance = math.sqrt((pos.x - TargetX)^2 + (pos.y - TargetY)^2)
+				UtilityHelper.SafeCall(BotHelper.MoveTo, TargetX, TargetY)
+				---- Check if quest is still ongoing
+				if not BotHelper.IsQuestOnGoing(QuestId) then
+					LogHelper.LogMessage("Quest 1324 no longer ongoing, stopping wait.")
+					break
+				end
+				if distance <= 10 then
+					hasNotArrived = false
+					break
+				end
+				Sleep(1)
+			end
+			UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
+		end
+		if BotHelper.GetItemQuantity(ItemId) > 0 then
+			UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, true)
+			UtilityHelper.SafeCall(BotHelper.AutoBoxSetBoxID, ItemId)
+			Sleep(1)
+		end
+	end
+end
+
 
 ---------------------------------------------
 -- 🔹 FileIslandQuest Functions Section
@@ -323,6 +354,11 @@ local function _ServerContinentHandleQuest()
 		[1280] = function()
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Trace!")
 			QuestHelper.MoveTo(11521, 23680, 0, 1280)
+			Sleep(5)
+		end,
+		[1306] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Twinkling Kido!")
+			QuestHelper.UseItem(80743, nil, nil, nil, 1306)
 			Sleep(5)
 		end,
 	}
