@@ -1,4 +1,182 @@
 ---------------------------------------------
+-- 🔹 Instance Section
+---------------------------------------------
+local STATUS_FILE = "Status.json"
+local CONFIG_FILE = "C2.n"
+local ACCOUNTS_LIST = {
+	{
+		username = "",
+		password = "",
+		server = 7,
+		tamers = { 1, 2, 3, 4, 5}
+	}
+}
+---------------------------------------------
+-- 🔹 SystemHelper Functions Section
+---------------------------------------------
+local SystemHelper = {}
+function SystemHelper.Timestamp()
+	return os.date("%Y-%m-%dT%H:%M:%S")
+end
+
+function SystemHelper.TimestampKST()
+	local utc = os.time(os.date("!*t"))
+	local kst = utc + (9 * 60 * 60)
+	return os.date("%Y-%m-%dT%H:%M:%S", kst)
+end
+
+---------------------------------------------
+-- 🔹 JsonHelper Functions Section
+---------------------------------------------
+local JsonHelper = {}
+function JsonHelper.EscapeStr(s)
+	return s:gsub("\\", "\\\\")
+			:gsub("\"", "\\\"")
+			:gsub("\n", "\\n")
+			:gsub("\r", "\\r")
+			:gsub("\t", "\\t")
+end
+
+function JsonHelper.Encode(value)
+	local function jsonEncode(val)
+		local t = type(val)
+		if t == "string" then
+			return '"' .. JsonHelper.EscapeStr(val) .. '"'
+		elseif t == "number" or t == "boolean" then
+			return tostring(val)
+		elseif t == "table" then
+			local isArray = #val > 0
+			local result = {}
+			if isArray then
+				for _, item in ipairs(val) do
+					table.insert(result, jsonEncode(item))
+				end
+				return "[" .. table.concat(result, ",") .. "]"
+			else
+				for k, v in pairs(val) do
+					table.insert(result, '"' .. tostring(k) .. '":' .. jsonEncode(v))
+				end
+				return "{" .. table.concat(result, ",") .. "}"
+			end
+		elseif t == "nil" then
+			return "null"
+		else
+			--error("Unsupported type: " .. t)
+		end
+	end
+	return jsonEncode(value)
+end
+
+function JsonHelper.Decode(json)
+	local result = {}
+	for objectStr in json:gmatch("{(.-)}") do
+		local entry = {}
+		for key, val in objectStr:gmatch('"(.-)"%s*:%s*("?.-"?)[,%}]') do
+			val = val:gsub('^"', ''):gsub('"$', '') -- remove quotes
+			if val == "true" then
+				val = true
+			elseif val == "false" then
+				val = false
+			elseif val == "null" then
+				val = nil
+			elseif tonumber(val) then
+				val = tonumber(val)
+			end
+			entry[key] = val
+		end
+		table.insert(result, entry)
+	end
+	return result
+end
+
+---------------------------------------------
+-- 🔹 StatusHelper Functions Section
+---------------------------------------------
+local StatusHelper = {}
+function StatusHelper.StatusFilePath()
+	local user = os.getenv("USERNAME") or os.getenv("USER")
+	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. STATUS_FILE
+end
+
+function StatusHelper.UpdateTamer(tamer)
+	local path = StatusHelper.StatusFilePath()
+	local file = io.open(path, "r")
+	local content = file and file:read("*a") or "[]"
+	if file then file:close() end
+	local list = JsonHelper.Decode(content)
+	tamer.LastUpdated = SystemHelper.Timestamp()
+	tamer.LastUpdatedKST = SystemHelper.TimestampKST()
+	local updated = false
+	for _, entry in ipairs(list) do
+		if entry.TamerId == tamer.TamerId then
+			for k, v in pairs(tamer) do entry[k] = v end
+			updated = true
+			break
+		end
+	end
+	if not updated then
+		table.insert(list, tamer)
+	end
+	local outFile = io.open(path, "w")
+	outFile:write(jsonEncode(list))
+	outFile:close()
+	--print("✅ Status updated for TamerId:", tamer.TamerId)
+end
+
+---------------------------------------------
+-- 🔹 SettingsHelper Functions Section
+---------------------------------------------
+local SettingsHelper = {}
+
+function SettingsHelper.GetPath()
+	local user = os.getenv("USERNAME") or os.getenv("USER")
+	if not user then
+		--log("❌ Could not detect username.")
+		return ""
+	end
+	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. CONFIG_FILE
+end
+
+function SettingsHelper.Update(FileName, Changes)
+	local filePath = SettingsHelper.GetPath(FileName .. ".n")
+	local file, err = io.open(filePath, "r")
+	if not file then
+		--log("❌ Failed to open file: " .. tostring(err))
+		return false
+	end
+	local content = file:read("*all")
+	file:close()
+	local totalChanges = 0
+	for key, newValue in pairs(Changes) do
+		local pattern = key .. "%s*=%s*[%d%.%a\"]+"  -- Matches key = value (value can be number, float, string)
+		local replacement = key .. " = " .. tostring(newValue)
+		local newContent, count = content:gsub(pattern, replacement)
+		if count > 0 then
+			--log("✅ Replaced '" .. key .. "' with value '" .. newValue .. "' (" .. count .. " times)")
+			content = newContent
+			totalChanges = totalChanges + count
+		else
+			log("⚠️ No match found for key: " .. key)
+		end
+	end
+
+	-- Save back if anything changed
+	if totalChanges > 0 then
+		file, err = io.open(filePath, "w")
+		if not file then
+			--log("❌ Failed to open file for writing: " .. tostring(err))
+			return
+		end
+		file:write(content)
+		file:close()
+		--log("✅ File updated successfully: " .. filePath)
+	else
+		--log("ℹ️ No changes made to file.")
+	end
+end
+
+
+---------------------------------------------
 -- 🔹 BotHelper Functions Section
 ---------------------------------------------
 local BotHelper = {}
@@ -6,6 +184,59 @@ local BotHelper = {}
 function BotHelper.IsInMap()
 	return IsInMap()
 end
+
+function BotHelper.SwitchCharacter(SettingsFile, Slot)
+	local waited = 0
+	maxWait = maxWait or 5
+	while not BotHelper.IsInMap() and waited < maxWait do
+		SettingsHelper.Update(SettingsFile, {
+			TamerSlot = Slot,
+		})
+		LoadBotConfig(SettingsFile)
+		GoToServerSelection()
+		Sleep(3)
+		waited = waited + 1
+	end
+end
+
+function BotHelper.UpdateTamerStatus()
+	local tamer = GetTamer()
+	StatusHelper.UpdateTamer({
+		TamerId = tamer.UID(),
+		TamerName = tamer.Name(),
+		TamerLevel = tamer.Level,
+		DigimonType = "Agumon",
+		DigimonLevel = 22,
+		FileIslandQuests = true,
+		ServerContinentQuests = true,
+		OdaibaQuests = false,
+		ShinjukuQuests = false,
+	})
+	Sleep(1)
+end
+
+--function BotHelper.SwitchAccount(SettingsFile, Account)
+--	local waited = 0
+--	maxWait = maxWait or 5
+--	while not BotHelper.IsInMap() and waited < maxWait do
+--		SettingsHelper.Update(SettingsFile, {
+--			TamerSlot = Slot,
+--		})
+--		LoadBotConfig(SettingsFile)
+--		GoToServerSelection()
+--		Sleep(3)
+--		waited = waited + 1
+--	end
+--end
+
+--function BotHelper.SwitchAccount()
+--	AutoLoginToggle(false)
+--	GoToLoginScreen()
+--	AutoLoginSetUsername("")
+--	AutoLoginSetPassword("")
+--	AutoLoginSetPassword2("")
+--	AutoLoginSetServer()
+--end
 
 function BotHelper.GetTamer()
 	return GetTamer()
