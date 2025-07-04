@@ -2,15 +2,20 @@
 -- 🔹 Instance Section
 ---------------------------------------------
 local STATUS_FILE = "Status.json"
-local CONFIG_FILE = "C2.n"
+local CONFIG_FILE = "C2"
 local ACCOUNTS_LIST = {
-	{
-		username = "",
-		password = "",
-		server = 7,
-		tamers = { 1, 2, 3, 4, 5}
-	}
+
 }
+---------------------------------------------
+-- 🔹 Constants Section
+---------------------------------------------
+local QUEST_EVENTS =  { 5870, 6280, 6686 }
+local QUEST_JUMP_TUTORIAL =  { 7035 }
+local QUEST_FILE_ISLAND_TOWARDS_INFINITY_MOUNTAIN =  { 1032, 1033, 1035 }
+local QUEST_SERVER_CONTINENT = { 7035, 1071, 1265, 1266, 1421, 3411 }
+local QUEST_SHINJUKU_PART_ONE = { 4614 }
+local QUEST_SHINJUKU_PART_TWO = { 4633 }
+local QUEST_ODAIBA = { 4014 }
 ---------------------------------------------
 -- 🔹 SystemHelper Functions Section
 ---------------------------------------------
@@ -23,6 +28,12 @@ function SystemHelper.TimestampKST()
 	local utc = os.time(os.date("!*t"))
 	local kst = utc + (9 * 60 * 60)
 	return os.date("%Y-%m-%dT%H:%M:%S", kst)
+end
+
+function SystemHelper.DateKST()
+	local utc = os.time(os.date("!*t"))
+	local kst = utc + (9 * 60 * 60)
+	return os.date("%Y-%m-%d", kst)
 end
 
 ---------------------------------------------
@@ -61,7 +72,7 @@ function JsonHelper.Encode(value)
 		elseif t == "nil" then
 			return "null"
 		else
-			--error("Unsupported type: " .. t)
+			log("Unsupported type: " .. t)
 		end
 	end
 	return jsonEncode(value)
@@ -69,10 +80,19 @@ end
 
 function JsonHelper.Decode(json)
 	local result = {}
-	for objectStr in json:gmatch("{(.-)}") do
+
+	-- Match each top-level object ({} block)
+	for objectStr in json:gmatch("{.-}") do
 		local entry = {}
-		for key, val in objectStr:gmatch('"(.-)"%s*:%s*("?.-"?)[,%}]') do
-			val = val:gsub('^"', ''):gsub('"$', '') -- remove quotes
+
+		-- Match each "key": value pair inside
+		for key, val in objectStr:gmatch('"(.-)"%s*:%s*(.-)[,%}]') do
+			key = key:gsub('^"%s*', ''):gsub('%s*"$', '')
+
+			-- Remove extra quotes from value
+			val = val:gsub('^"', ''):gsub('"$', '')
+
+			-- Convert basic types
 			if val == "true" then
 				val = true
 			elseif val == "false" then
@@ -82,10 +102,13 @@ function JsonHelper.Decode(json)
 			elseif tonumber(val) then
 				val = tonumber(val)
 			end
+
 			entry[key] = val
 		end
+
 		table.insert(result, entry)
 	end
+
 	return result
 end
 
@@ -93,9 +116,15 @@ end
 -- 🔹 StatusHelper Functions Section
 ---------------------------------------------
 local StatusHelper = {}
+--function StatusHelper.StatusFilePath()
+--	local user = os.getenv("USERNAME") or os.getenv("USER")
+--	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. STATUS_FILE
+--end
 function StatusHelper.StatusFilePath()
 	local user = os.getenv("USERNAME") or os.getenv("USER")
-	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. STATUS_FILE
+	local dateStr = SystemHelper.DateKST()
+	local filename = "[" .. dateStr .. "] " .. STATUS_FILE
+	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. filename
 end
 
 function StatusHelper.UpdateTamer(tamer)
@@ -108,7 +137,7 @@ function StatusHelper.UpdateTamer(tamer)
 	tamer.LastUpdatedKST = SystemHelper.TimestampKST()
 	local updated = false
 	for _, entry in ipairs(list) do
-		if entry.TamerId == tamer.TamerId then
+		if entry.TamerName == tamer.TamerName then
 			for k, v in pairs(tamer) do entry[k] = v end
 			updated = true
 			break
@@ -118,7 +147,7 @@ function StatusHelper.UpdateTamer(tamer)
 		table.insert(list, tamer)
 	end
 	local outFile = io.open(path, "w")
-	outFile:write(jsonEncode(list))
+	outFile:write(JsonHelper.Encode(list))
 	outFile:close()
 	--print("✅ Status updated for TamerId:", tamer.TamerId)
 end
@@ -126,33 +155,40 @@ end
 ---------------------------------------------
 -- 🔹 SettingsHelper Functions Section
 ---------------------------------------------
-local SettingsHelper = {}
+local ConfigHelper = {}
 
-function SettingsHelper.GetPath()
+function ConfigHelper.GetPath()
 	local user = os.getenv("USERNAME") or os.getenv("USER")
 	if not user then
 		--log("❌ Could not detect username.")
 		return ""
 	end
-	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. CONFIG_FILE
+	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. CONFIG_FILE .. ".n"
 end
 
-function SettingsHelper.Update(FileName, Changes)
-	local filePath = SettingsHelper.GetPath(FileName .. ".n")
+function ConfigHelper.Update(Changes)
+	local filePath = ConfigHelper.GetPath()
 	local file, err = io.open(filePath, "r")
-	if not file then
-		--log("❌ Failed to open file: " .. tostring(err))
-		return false
-	end
+	if not file then return false end
+
 	local content = file:read("*all")
 	file:close()
 	local totalChanges = 0
+
 	for key, newValue in pairs(Changes) do
-		local pattern = key .. "%s*=%s*[%d%.%a\"]+"  -- Matches key = value (value can be number, float, string)
-		local replacement = key .. " = " .. tostring(newValue)
-		local newContent, count = content:gsub(pattern, replacement)
+		local replacementValue = (type(newValue) == "string" and "'" .. newValue .. "'" or tostring(newValue))
+		-- Pattern: key = any content (non-greedy)
+		local pattern = "%f[%w_]" .. key .. "%f[^%w_]%s*=%s*['\"][^'\"]*['\"]"
+		-- Try quoted string first
+		local newContent, count = content:gsub(pattern, key .. " = " .. replacementValue)
+
+		-- If no quoted match, try numeric (unquoted)
+		if count == 0 then
+			pattern = key .. "%s*=%s*[%d%.]+"
+			newContent, count = content:gsub(pattern, key .. " = " .. replacementValue)
+		end
+
 		if count > 0 then
-			--log("✅ Replaced '" .. key .. "' with value '" .. newValue .. "' (" .. count .. " times)")
 			content = newContent
 			totalChanges = totalChanges + count
 		else
@@ -160,18 +196,12 @@ function SettingsHelper.Update(FileName, Changes)
 		end
 	end
 
-	-- Save back if anything changed
 	if totalChanges > 0 then
 		file, err = io.open(filePath, "w")
-		if not file then
-			--log("❌ Failed to open file for writing: " .. tostring(err))
-			return
-		end
+		if not file then return end
 		file:write(content)
 		file:close()
-		--log("✅ File updated successfully: " .. filePath)
-	else
-		--log("ℹ️ No changes made to file.")
+		Sleep(1)
 	end
 end
 
@@ -185,61 +215,75 @@ function BotHelper.IsInMap()
 	return IsInMap()
 end
 
-function BotHelper.SwitchCharacter(SettingsFile, Slot)
-	local waited = 0
-	maxWait = maxWait or 5
-	while not BotHelper.IsInMap() and waited < maxWait do
-		SettingsHelper.Update(SettingsFile, {
-			TamerSlot = Slot,
-		})
-		LoadBotConfig(SettingsFile)
-		GoToServerSelection()
+function BotHelper.SwitchAccount(account)
+	logInfo("Switching Account: " .. account.username)
+	ConfigHelper.Update({
+		Server = account.Server,
+		Username = account.username,
+		Password = account.password,
+		Password2 = account.otp,
+		TamerSlot = account.tamers[1],
+	})
+	LoadBotConfig(CONFIG_FILE)
+	AutoLoginToggle(true)
+	GoToLoginScreen()
+	Sleep(1)
+	while ScriptRun() and (IsLoginScreen() or IsSecondPasswordScreen() or not IsInMap()) do
+		--log("Waiting For Login: " .. tostring(IsLoginScreen()) .. " Otp: " .. tostring(IsSecondPasswordScreen()) .. " Map: " .. tostring(IsInMap()))
 		Sleep(3)
-		waited = waited + 1
 	end
 end
 
-function BotHelper.UpdateTamerStatus()
-	local tamer = GetTamer()
-	StatusHelper.UpdateTamer({
-		TamerId = tamer.UID(),
-		TamerName = tamer.Name(),
-		TamerLevel = tamer.Level,
-		DigimonType = "Agumon",
-		DigimonLevel = 22,
-		FileIslandQuests = true,
-		ServerContinentQuests = true,
-		OdaibaQuests = false,
-		ShinjukuQuests = false,
+function BotHelper.SwitchTamer(Slot)
+	logInfo("Switching Tamers: T" .. Slot)
+	ConfigHelper.Update({
+		TamerSlot = Slot,
 	})
 	Sleep(1)
+	LoadBotConfig(CONFIG_FILE)
+	GoToServerSelection()
+	Sleep(1)
+	while ScriptRun() and (IsServerSelectionScreen() or IsChararacterSelectionScreen() or not IsInMap()) do
+		--log("Waiting For Server: " .. tostring(IsServerSelectionScreen()) .. " Tamer: " .. tostring(IsChararacterSelectionScreen()) .. " Map: " .. tostring(IsInMap()))
+		Sleep(3)
+	end
 end
 
---function BotHelper.SwitchAccount(SettingsFile, Account)
---	local waited = 0
---	maxWait = maxWait or 5
---	while not BotHelper.IsInMap() and waited < maxWait do
---		SettingsHelper.Update(SettingsFile, {
---			TamerSlot = Slot,
---		})
---		LoadBotConfig(SettingsFile)
---		GoToServerSelection()
---		Sleep(3)
---		waited = waited + 1
---	end
---end
-
---function BotHelper.SwitchAccount()
---	AutoLoginToggle(false)
---	GoToLoginScreen()
---	AutoLoginSetUsername("")
---	AutoLoginSetPassword("")
---	AutoLoginSetPassword2("")
---	AutoLoginSetServer()
---end
+function BotHelper.UpdateTamerStatus(Account, TamerIndex)
+	local waited = 0
+	local maxWait = 10
+	while ScriptRun() and not BotHelper.IsInMap() and waited < maxWait do
+		Sleep(3)
+		waited = waited + 1
+	end
+	if IsInMap() then
+		local tamer = GetTamer()
+		local digimon = GetDigimon()
+		StatusHelper.UpdateTamer({
+			Account = Account,
+			TamerId = tamer:UID(),
+			TamerIndex = TamerIndex,
+			TamerName = tamer:Name(),
+			TamerLevel = tamer:Level(),
+			DigimonType = digimon:Type(),
+			DigimonLevel = digimon:Level(),
+			QuestTutorial = BotHelper.AreAllQuestsComplete(QUEST_JUMP_TUTORIAL),
+			QuestFileIsland = BotHelper.AreAllQuestsComplete(QUEST_FILE_ISLAND_TOWARDS_INFINITY_MOUNTAIN),
+			QuestServerContinent = BotHelper.AreAllQuestsComplete(QUEST_SERVER_CONTINENT),
+			QuestOdaiba = BotHelper.AreAllQuestsComplete(QUEST_ODAIBA),
+			QuestShinjukuPart1 = BotHelper.AreAllQuestsComplete(QUEST_SHINJUKU_PART_ONE),
+			QuestShinjukuPart2 = BotHelper.AreAllQuestsComplete(QUEST_SHINJUKU_PART_TWO),
+			QuestEvent = BotHelper.AreAllQuestsComplete(QUEST_EVENTS),
+		})
+	end
+end
 
 function BotHelper.GetTamer()
 	return GetTamer()
+end
+
+function BotHelper.GetDigimon()
+	return GetDigimon()
 end
 
 function BotHelper.MoveTo(x, y)
@@ -322,6 +366,29 @@ function BotHelper.log(Message)
 	return log(Message)
 end
 
+function BotHelper.HighestEvolutionPossible()
+	local digimon = GetDigimon();
+	if digimon:Type() == 31006 then --Renamon
+		AutoEvoToggleUseEvoDigimonID(true)
+		AutoEvoSetEvoDigimonID(67003) -- Sakuya Awaken
+	else if (level >= 41) then
+			AutoEvoSetEvoType(6)--Mega
+		end
+	end
+	AutoEvoToggle(true)
+	--AutoFarmSetUseSkill(0, 1)--Use F1
+	--AutoFarmSetUseSkill(1, 1)--Use F2
+end
+
+function BotHelper.AreAllQuestsComplete(list)
+	for _, id in ipairs(list) do
+		if not IsQuestComplete(id) then
+			return false
+		end
+	end
+	return true
+end
+
 ---------------------------------------------
 -- 🔹 LogHelper Functions Section
 ---------------------------------------------
@@ -355,7 +422,7 @@ local UtilityHelper = {}
 function UtilityHelper.WaitForMap(maxWait)
 	local waited = 0
 	maxWait = maxWait or 10
-	while not BotHelper.IsInMap() and waited < maxWait do
+	while ScriptRun() and  not BotHelper.IsInMap() and waited < maxWait do
 		LogHelper.LogMessage("Waiting for map to load...")
 		Sleep(3)
 		waited = waited + 1
@@ -451,7 +518,7 @@ function QuestHelper.MoveTo(TargetX, TargetY, MapId, QuestId)
 		--Check If Map Is Correct
 		UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
 		local hasNotArrived = true
-		while hasNotArrived do
+		while ScriptRun() and hasNotArrived do
 			local pos = BotHelper.GetTamer():Position()
 			local distance = math.sqrt((pos.x - TargetX)^2 + (pos.y - TargetY)^2)
 			UtilityHelper.SafeCall(BotHelper.MoveTo, TargetX, TargetY)
@@ -478,7 +545,7 @@ function QuestHelper.UseItem(ItemId, TargetX, TargetY, MapId, QuestId)
 				--Check If Map Is Correct
 				UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
 				local hasNotArrived = true
-				while hasNotArrived do
+				while ScriptRun() and hasNotArrived do
 					local pos = BotHelper.GetTamer():Position()
 					local distance = math.sqrt((pos.x - TargetX)^2 + (pos.y - TargetY)^2)
 					UtilityHelper.SafeCall(BotHelper.MoveTo, TargetX, TargetY)
@@ -548,8 +615,7 @@ end
 
 function FileIslandQuest.CheckProgress()
 	local allCompleted = true
-	local quests = { 1032, 1033, 1035 }
-	for _, questId in ipairs(quests) do
+	for _, questId in ipairs(QUEST_FILE_ISLAND_TOWARDS_INFINITY_MOUNTAIN) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
 			if UtilityHelper.WaitForMap() then
@@ -633,8 +699,7 @@ end
 
 function ServerContinentQuest.CheckProgress()
 	local allCompleted = true
-	local quests = { 1071, 1265, 1266, 1421, 3411 }
-	for _, questId in ipairs(quests) do
+	for _, questId in ipairs(QUEST_SERVER_CONTINENT) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
 			if UtilityHelper.WaitForMap() then
@@ -799,8 +864,7 @@ end
 
 function ShinjukuQuest.CheckPartOneProgress()
 	local allCompleted = true
-	local quests = { 4614 }
-	for _, questId in ipairs(quests) do
+	for _, questId in ipairs(QUEST_SHINJUKU_PART_ONE) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
 			if UtilityHelper.WaitForMap() then
@@ -819,8 +883,7 @@ end
 
 function ShinjukuQuest.CheckPartTwoProgress()
 	local allCompleted = true
-	local quests = { 4633 }
-	for _, questId in ipairs(quests) do
+	for _, questId in ipairs(QUEST_SHINJUKU_PART_TWO) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
 			if UtilityHelper.WaitForMap() then
@@ -858,8 +921,7 @@ end
 
 function OdaibaQuest.CheckProgress()
 	local allCompleted = true
-	local quests = { 4014 }
-	for _, questId in ipairs(quests) do
+	for _, questId in ipairs(QUEST_ODAIBA) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
 			if UtilityHelper.WaitForMap() then
@@ -900,8 +962,7 @@ end
 
 function EventQuest.CheckProgress()
 	local allCompleted = true
-	local quests = { 6280, 6686 }
-	for _, questId in ipairs(quests) do
+	for _, questId in ipairs(QUEST_EVENTS) do
 		if not BotHelper.IsQuestComplete(questId) then
 			allCompleted = false
 			if UtilityHelper.WaitForMap() then
@@ -921,9 +982,14 @@ end
 ---------------------------------------------
 -- 🔹 Main Function Section
 ---------------------------------------------
+function Cleanup()
+	UtilityHelper.SafeCall(BotHelper.AutoFarmToggle, false)
+	UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, false)
+	UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
+end
+
+
 function main()
-	local tamer = BotHelper.GetTamer()
-	local level = tamer:Level()
 	local questGroups = {
 		{
 			name = "[Daily Event]",
@@ -935,31 +1001,31 @@ function main()
 		--	tamerLevel = 140,
 		--	checkFn = EventQuest.CheckProgress,
 		--},
-		{
-			name = "[File Island]",
-			tamerLevel = 1,
-			checkFn = FileIslandQuest.CheckProgress,
-		},
-		{
-			name = "[Server Continent]",
-			tamerLevel = 70,
-			checkFn = ServerContinentQuest.CheckProgress,
-		},
-		{
-			name = "[Shinjuku Part 1]",
-			tamerLevel = 70,
-			checkFn = ShinjukuQuest.CheckPartOneProgress,
-		},
-		{
-			name = "[Odaiba]",
-			tamerLevel = 80,
-			checkFn = OdaibaQuest.CheckProgress,
-		},
-		{
-			name = "[Shinjuku Part 2]",
-			tamerLevel = 90,
-			checkFn = ShinjukuQuest.CheckPartTwoProgress,
-		},
+		--{
+		--	name = "[File Island]",
+		--	tamerLevel = 1,
+		--	checkFn = FileIslandQuest.CheckProgress,
+		--},
+		--{
+		--	name = "[Server Continent]",
+		--	tamerLevel = 70,
+		--	checkFn = ServerContinentQuest.CheckProgress,
+		--},
+		--{
+		--	name = "[Shinjuku Part 1]",
+		--	tamerLevel = 70,
+		--	checkFn = ShinjukuQuest.CheckPartOneProgress,
+		--},
+		--{
+		--	name = "[Odaiba]",
+		--	tamerLevel = 80,
+		--	checkFn = OdaibaQuest.CheckProgress,
+		--},
+		--{
+		--	name = "[Shinjuku Part 2]",
+		--	tamerLevel = 90,
+		--	checkFn = ShinjukuQuest.CheckPartTwoProgress,
+		--},
 		--{
 		--	name = "[Spiral Mountain]",
 		--	tamerLevel = 90,
@@ -976,39 +1042,57 @@ function main()
 		--	checkFn = EventQuest.CheckProgress,
 		--},
 	}
-	local currentGroupIndex = 1
 	while ScriptRun() do
-		if currentGroupIndex > #questGroups then
-			LogHelper.LogMessage("All quests are completed. Stopping script.")
-			break
-		end
-		local group = questGroups[currentGroupIndex]
-		if level < group.tamerLevel then
-			LogHelper.LogMessage(group.name .. ": Tamer level is below " .. group.tamerLevel .. ". skipping.")
-			currentGroupIndex = currentGroupIndex + 1
-		else
-			local completed = group.checkFn()
-			if completed then
-				LogHelper.LogMessage(group.name .. ": Quests Are Completed!")
-				currentGroupIndex = currentGroupIndex + 1
-			else
-				LogHelper.LogMessage(group.name .. ": Quests Ongoing!")
+		for _, account in ipairs(ACCOUNTS_LIST) do
+			BotHelper.SwitchAccount(account)
+			for _, tamerIndex in ipairs(account.tamers) do
+				local currentGroupIndex = 1
+				local group = questGroups[currentGroupIndex]
+				if (tamerIndex ~= account.tamers[1]) then
+					BotHelper.SwitchTamer(tamerIndex)
+				end
+				if UtilityHelper.WaitForMap() then
+					Sleep(5)
+					local tamer = BotHelper.GetTamer()
+					local digimon = BotHelper.GetDigimon()
+					local level = tamer:Level()
+					BotHelper.HighestEvolutionPossible()
+					while ScriptRun() do
+						if currentGroupIndex > #questGroups then
+							LogHelper.LogMessage("All quests are completed. Stopping script.")
+							break
+						end
+						if level < group.tamerLevel then
+							LogHelper.LogMessage(group.name .. ": Tamer level is below " .. group.tamerLevel .. ". skipping.")
+							currentGroupIndex = currentGroupIndex + 1
+						else
+							local completed = group.checkFn()
+							if completed then
+								LogHelper.LogMessage(group.name .. ": Quests Are Completed!")
+								currentGroupIndex = currentGroupIndex + 1
+							else
+								LogHelper.LogMessage(group.name .. ": Quests Ongoing!")
+							end
+						end
+						Sleep(15)
+					end
+					BotHelper.UpdateTamerStatus(account.username, tamerIndex)
+					Cleanup()
+				end
+				Sleep(5)
+				if not ScriptRun() then
+					break
+				end
 			end
 		end
 		Sleep(15)
+		break
 	end
 end
 
 function handler(err)
 	LogHelper.LogMessage("Error caught: " .. tostring(err))
 	Cleanup()
-end
-
-function Cleanup()
-	LogHelper.LogMessage("Performing cleanup before shutdown...")
-	UtilityHelper.SafeCall(BotHelper.AutoFarmToggle, false)
-	UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, false)
-	UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
 end
 
 xpcall(main, handler)
