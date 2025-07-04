@@ -1,28 +1,20 @@
 local possibleSetters = {
-    "AutoFarmToggle", "AutoFarmSetAttackBack", "AutoFarmSetReturnPosition", "AutoFarmSetBossPriorize",
-    "AutoFarmSetForceChannel", "AutoFarmSetHuntRange", "AutoFarmSetLootRange", "AutoFarmSetReturnMap",
-    "AutoFarmSetUseOnlySkills", "AutoFarmSetUseF1", "AutoFarmSetUseF2", "AutoFarmSetUseF3", "AutoFarmSetUseF4", "AutoFarmSetUseF5",
-    "AutoFarmSetUseTamerF1", "AutoFarmSetUseTamerF2", "AutoFarmSetUseTamerF3", "AutoFarmSetUseTamerF4", "AutoFarmSetUseTamerF5",
+    "AutoFarmToggle", "AutoHealToggle", "AutoLoginToggle", "AutoQuestToggle",
+    "AutoLootToggle", "AutoBuffToggle", "AutoDropToggle", "AutoDGToggle",
+    "AutoEvoToggle", "AutoReturnToggle",
 
-    "AutoHealToggle", "AutoHealSetDigiHPPerc1", "AutoHealSetDigiHPPerc2", "AutoHealSetTamerHPPerc1", "AutoHealSetTamerHPPerc2",
+    "AutoFarmSetHuntRange", "AutoFarmSetLootRange", "AutoFarmSetForceChannel", "AutoFarmSetReturnMap",
+    "AutoLoginSetUsername", "AutoLoginSetPassword", "AutoLoginSetPassword2", "AutoLoginSetServer", "AutoLoginSetTamer",
+    "AutoDGSetRunCount", "AutoDGSetHPThreshold", "AutoDGSetReEnterDelay", "AutoDGSetUnlimitedRun",
+    "AutoEvoSetDigimonID", "AutoEvoSetEvoType", "AutoEvoSetUseDigimonID",
+    "AutoHealSetDigiHPPerc1", "AutoHealSetDigiHPPerc2", "AutoHealSetTamerHPPerc1", "AutoHealSetTamerHPPerc2",
     "AutoHealSetDigiDSPerc1", "AutoHealSetDigiDSPerc2", "AutoHealSetTamerDSPerc1", "AutoHealSetTamerDSPerc2",
     "AutoHealSetFatiguePerc", "AutoHealSetFatigueLogout",
-
-    "AutoLoginToggle", "AutoLoginSetUsername", "AutoLoginSetPassword", "AutoLoginSetPassword2", "AutoLoginSetServer", "AutoLoginSetTamer",
-
-    "AutoQuestToggle", "AutoQuestSetIDs",
-
-    "AutoLootToggle", "AutoLootSetItems", "AutoLootSetMode", "AutoLootSetBits",
-
-    "AutoBuffToggle", "AutoBuffSetBuffClasses", "AutoBuffSetOnlyDG",
-
-    "AutoDropToggle", "AutoDropSetItemIDs", "AutoDropSetMinSlot",
-
-    "AutoDGToggle", "AutoDGSetRunCount", "AutoDGSetHPThreshold", "AutoDGSetReEnterDelay", "AutoDGSetUnlimitedRun",
-
-    "AutoEvoToggle", "AutoEvoSetDigimonID", "AutoEvoSetEvoType", "AutoEvoSetUseDigimonID",
-
-    "AutoReturnToggle", "AutoReturnSetItemIDs", "AutoReturnSetMinSlot"
+    "AutoFarmAddHuntPosition", "AutoFarmClearHuntPositions",
+    "AutoQuestAddQuest", "AutoQuestClearQuests",
+    "AutoDropAddItemID", "AutoDropClearItemIDs",
+    "AutoLootSetItems", "AutoLootSetMode", "AutoLootSetBits",
+    "AutoBuffSetBuffClasses"
 }
 
 local foundFunctions = {}
