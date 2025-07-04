@@ -25,11 +25,24 @@ local possibleSetters = {
     "AutoReturnToggle", "AutoReturnSetItemIDs", "AutoReturnSetMinSlot"
 }
 
+local foundFunctions = {}
+
 for _, funcName in ipairs(possibleSetters) do
     local exists = _G[funcName]
     if type(exists) == "function" then
-        log("[FOUND] function: " .. funcName)
+        log("[FOUND] Function exists: " .. funcName)
+        table.insert(foundFunctions, funcName)
     else
         log("[NOT FOUND] No function: " .. funcName)
     end
 end
+
+-- Print ready-to-copy Lua table
+local output = "local foundFunctions = {\n"
+for _, name in ipairs(foundFunctions) do
+    output = output .. string.format('    "%s",\n', name)
+end
+output = output .. "}\n"
+
+log("✅ Function probe completed!")
+log(output)
