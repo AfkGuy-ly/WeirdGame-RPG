@@ -1,38 +1,34 @@
-local logoutFunctions = {
-    "GoBackToLogin", "Logout", "Disconnect", "ForceLogout", "ReturnToLogin", "BackToLogin",
-    "ClientLogout", "ClientDisconnect", "ClientRestart", "ClientExit", "GameLogout", "GameDisconnect",
-    "ForceReturnToLogin", "Relog", "ReLogin", "Reconnect", "ExitGame", "StopGame", "StopSession",
-    "TerminateSession", "EndSession", "LogOff", "LogOut", "LeaveGame", "LeaveWorld", "LeaveServer",
-    "RestartGame", "RestartSession", "SessionEnd", "ReturnLogin", "BackLogin", "ToLogin",
-    "RestartLogin", "LoginScreen", "AutoLogout", "AutoLogOut", "AutoDisconnect", "AutoExit",
-    "QuitGame", "QuitSession", "QuitClient", "QuitNow", "ForceExit", "ForceQuit", "ForceDisconnect",
-    "KickSelf", "KickMe", "SendLogout", "SendDisconnect", "GameStop", "GameExit", "ReturnToMenu",
-    "GoToLogin", "GoToMenu", "RestartBot", "StopBot", "StopScript", "ScriptStop", "StopAutomation",
-    "StopAll", "TerminateBot", "ShutdownBot", "ShutdownClient", "ShutdownGame", "RestartAutomation",
-    "SessionStop", "DisconnectGame", "DisconnectClient", "DisconnectNow", "ImmediateLogout",
-    "ImmediateDisconnect", "ImmediateExit", "HardDisconnect", "HardLogout", "SoftLogout", "SoftDisconnect",
-    "GameLeave", "BackToSelect", "ReturnCharacterSelect", "ReturnCharSelect", "ToCharacterSelect",
-    "ToCharSelect", "GotoCharSelect", "GotoCharacterSelect", "RestartCharacter", "RestartChar",
-    "EndCharSession", "ForceCharLogout", "LeaveNow", "GoNow", "StopNow", "InstantLogout",
-    "InstantDisconnect", "ForceRelog", "ForceReLogin", "ManualLogout", "ManualDisconnect",
-    "ManualExit", "ExitNow", "ExitBot", "TerminateNow", "EndBot", "EndAutomation", "BreakScript",
-    "BreakBot", "BreakSession", "BreakClient", "CloseClient", "CloseBot", "CloseAutomation",
-    "CloseGame", "CloseSession", "ExitAutomation", "ReturnToStart", "ReturnToBase", "ReturnToLobby",
-    "GoToLobby", "LobbyReturn", "LobbyDisconnect", "LobbyExit", "LobbyLeave", "LobbyStop",
-    "BackToLobby", "CharSelectLogout", "CharSelectDisconnect", "CharSelectReturn", "CharSelectStop",
-    "CharSelectExit", "CharSelectLeave", "StopCharacter", "StopChar", "EndChar", "EndCharacter",
-    "KickFromGame", "KickFromSession", "KickFromServer", "KickOut", "KickBot", "DropBot",
-    "DropConnection", "DropSession", "DropGame", "DropClient", "DropNow", "DropAutomation",
-    "LeaveAutomation", "LeaveBot", "LeaveScript", "EndScript", "CancelScript", "CancelBot",
-    "CancelAutomation", "StopModule", "StopEngine", "StopKernel", "EndKernel", "EndModule",
-    "StopProcess", "TerminateProcess", "ExitProcess", "AbortScript", "AbortBot", "AbortAutomation",
-    "AbortSession", "AbortClient", "AbortGame", "AbortNow"
+local possibleSetters = {
+    "AutoFarmToggle", "AutoFarmSetAttackBack", "AutoFarmSetReturnPosition", "AutoFarmSetBossPriorize",
+    "AutoFarmSetForceChannel", "AutoFarmSetHuntRange", "AutoFarmSetLootRange", "AutoFarmSetReturnMap",
+    "AutoFarmSetUseOnlySkills", "AutoFarmSetUseF1", "AutoFarmSetUseF2", "AutoFarmSetUseF3", "AutoFarmSetUseF4", "AutoFarmSetUseF5",
+    "AutoFarmSetUseTamerF1", "AutoFarmSetUseTamerF2", "AutoFarmSetUseTamerF3", "AutoFarmSetUseTamerF4", "AutoFarmSetUseTamerF5",
+
+    "AutoHealToggle", "AutoHealSetDigiHPPerc1", "AutoHealSetDigiHPPerc2", "AutoHealSetTamerHPPerc1", "AutoHealSetTamerHPPerc2",
+    "AutoHealSetDigiDSPerc1", "AutoHealSetDigiDSPerc2", "AutoHealSetTamerDSPerc1", "AutoHealSetTamerDSPerc2",
+    "AutoHealSetFatiguePerc", "AutoHealSetFatigueLogout",
+
+    "AutoLoginToggle", "AutoLoginSetUsername", "AutoLoginSetPassword", "AutoLoginSetPassword2", "AutoLoginSetServer", "AutoLoginSetTamer",
+
+    "AutoQuestToggle", "AutoQuestSetIDs",
+
+    "AutoLootToggle", "AutoLootSetItems", "AutoLootSetMode", "AutoLootSetBits",
+
+    "AutoBuffToggle", "AutoBuffSetBuffClasses", "AutoBuffSetOnlyDG",
+
+    "AutoDropToggle", "AutoDropSetItemIDs", "AutoDropSetMinSlot",
+
+    "AutoDGToggle", "AutoDGSetRunCount", "AutoDGSetHPThreshold", "AutoDGSetReEnterDelay", "AutoDGSetUnlimitedRun",
+
+    "AutoEvoToggle", "AutoEvoSetDigimonID", "AutoEvoSetEvoType", "AutoEvoSetUseDigimonID",
+
+    "AutoReturnToggle", "AutoReturnSetItemIDs", "AutoReturnSetMinSlot"
 }
 
-for _, funcName in ipairs(logoutFunctions) do
+for _, funcName in ipairs(possibleSetters) do
     local exists = _G[funcName]
     if type(exists) == "function" then
-        log("[FOUND] Logout-related function: " .. funcName)
+        log("[FOUND] function: " .. funcName)
     else
         log("[NOT FOUND] No function: " .. funcName)
     end
