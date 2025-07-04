@@ -241,29 +241,29 @@ end
 
 function QuestHelper.UseItem(ItemId, TargetX, TargetY, MapId, QuestId)
 	if UtilityHelper.WaitForMap() then
-		if TargetX ~= nil or TargetX ~=nil then
-			--Check If Map Is Correct
-			UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
-			local hasNotArrived = true
-			while hasNotArrived do
-				local pos = BotHelper.GetTamer():Position()
-				local distance = math.sqrt((pos.x - TargetX)^2 + (pos.y - TargetY)^2)
-				UtilityHelper.SafeCall(BotHelper.MoveTo, TargetX, TargetY)
-				---- Check if quest is still ongoing
-				if not BotHelper.IsQuestOnGoing(QuestId) then
-					LogHelper.LogMessage("Quest 1324 no longer ongoing, stopping wait.")
-					break
-				end
-				if distance <= 10 then
-					hasNotArrived = false
-					break
-				end
-				Sleep(1)
-			end
-			UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
-		end
 		LogHelper.LogMessage("Quantity: " .. BotHelper.GetItemQuantity(ItemId))
 		if BotHelper.GetItemQuantity(ItemId) > 0 then
+			if TargetX ~= nil or TargetX ~=nil then
+				--Check If Map Is Correct
+				UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
+				local hasNotArrived = true
+				while hasNotArrived do
+					local pos = BotHelper.GetTamer():Position()
+					local distance = math.sqrt((pos.x - TargetX)^2 + (pos.y - TargetY)^2)
+					UtilityHelper.SafeCall(BotHelper.MoveTo, TargetX, TargetY)
+					---- Check if quest is still ongoing
+					if not BotHelper.IsQuestOnGoing(QuestId) then
+						LogHelper.LogMessage("Quest 1324 no longer ongoing, stopping wait.")
+						break
+					end
+					if distance <= 10 then
+						hasNotArrived = false
+						break
+					end
+					Sleep(1)
+				end
+				UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
+			end
 			UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, true)
 			UtilityHelper.SafeCall(BotHelper.AutoBoxSetBoxID, ItemId)
 			Sleep(1)
@@ -364,7 +364,7 @@ local function _ServerContinentHandleQuest()
 		[1306] = function()
 			--BUGGED UNABLE TO USE ITEM HERE WILL HAVE TO FIND ANOTHERWAY AROUND
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Twinkling Kido!")
-			QuestHelper.UseItem(80743, nil, nil, nil, 1306)
+			--QuestHelper.UseItem(80743, nil, nil, nil, 1306)
 			Sleep(5)
 		end,
 		[1307] = function()
@@ -385,6 +385,11 @@ local function _ServerContinentHandleQuest()
 		[1420] = function()
 			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Final Battle with Etemon!")
 			QuestHelper.SummonBoss(154008, 99105, nil, nil, true)
+			Sleep(5)
+		end,
+		[3401] = function()
+			LogHelper.LogMessage("[SERVER CONTINENT] Assisting with Quest: Link to real world!")
+			QuestHelper.MoveTo(33506, 23440, 0, 3401)
 			Sleep(5)
 		end,
 	}
@@ -429,6 +434,130 @@ local function _ShinjukuHandleQuest()
 			QuestHelper.MoveTo(36680, 17075, 0, 4503)
 			Sleep(5)
 		end,
+		[4506] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(12822, 13300, 0, 4506)
+			QuestHelper.MoveTo(17503, 27497, 0, 4506)
+			QuestHelper.MoveTo(33366, 28780, 0, 4506)
+			QuestHelper.MoveTo(39709, 35705, 0, 4506)
+			Sleep(5)
+		end,
+		[4507] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(26646, 54561, 0, 4507)
+			Sleep(5)
+		end,
+		[4515] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(7378, 30303, 0, 4515)
+			QuestHelper.MoveTo(15220, 22546, 0, 4515)
+			Sleep(5)
+		end,
+		[4518] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(32196, 28328, 0, 4518)
+			QuestHelper.MoveTo(29412, 38214, 0, 4518)
+			QuestHelper.MoveTo(40279, 37153, 0, 4518)
+			Sleep(5)
+		end,
+		[4521] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(36164, 46560, 0, 4521)
+			Sleep(5)
+		end,
+		[4522] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(27075, 32855, 0, 4522)
+			Sleep(5)
+		end,
+		[4530] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(37963, 41960, 0, 4530)
+			Sleep(5)
+		end,
+		[4537] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			Sleep(5) --Waiting For MapJump
+			QuestHelper.MoveTo(40154, 39908, 0, 4537) --Western Area Night
+			QuestHelper.MoveTo(35958, 28650, 0, 4537)
+			QuestHelper.MoveTo(36198, 14943, 0, 4537)
+			QuestHelper.MoveTo(38606, 14791, 0, 4537)
+			Sleep(5)
+		end,
+		[4541] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(19438, 26821, 0, 4541)
+			Sleep(5)
+		end,
+		[4542] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			--ANOTHER BUGGED QUEST ITEM
+			--QuestHelper.UseItem(80913, 16627, 32229, nil, 4542)
+			Sleep(5)
+		end,
+		[4544] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			Sleep(5) --Waiting For MapJump
+			QuestHelper.MoveTo(34505, 32343, 0, 4544) --Western Area Night
+			Sleep(5)
+		end,
+		[4546] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(34505, 32343, 0, 4546) --Western Area Night
+			Sleep(5)
+		end,
+		[4550] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			--QuestHelper.UseItem(80913, 39447, 40327, nil, 4542) -- Western Day
+			--QuestHelper.UseItem(80913, 35117, 26189, nil, 4542) -- Western Day
+			--QuestHelper.UseItem(80913, 36071, 15024, nil, 4542) -- Western Day
+			--QuestHelper.UseItem(80913, 40573, 15003, nil, 4542) -- Western Day
+
+			Sleep(5)
+		end,
+		[4553] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			--Farm 5 Allomon(72510) + use 1 Item
+			--QuestHelper.UseItem(80913, 22579, 28243, nil, 4553) -- Western Day (1Item)
+			-- Farm 5 goblimon(72501) + 1 ogremon (72502)
+			--QuestHelper.UseItem(80913, 41476, 14865, nil, 4553) -- Western Night (1Item)
+			Sleep(5)
+		end,
+		[4561] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(17558, 30633, 0, 4561) --East Night
+			Sleep(5)
+		end,
+		[4561] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			--Jump Channels check for Timer with less time For Devidra ()
+			Sleep(5)
+		end,
+		[4567] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			--QuestHelper.MoveTo(17558, 30633, 0, 4561) --Western Day
+			Sleep(5)
+		end,
+		[4583] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(36348, 41955, 0, 4583) --East Day
+			QuestHelper.MoveTo(45962, 33555, 0, 4583) --East Day
+			QuestHelper.MoveTo(45962, 33555, 0, 4583) --East Day
+			QuestHelper.MoveTo(35784, 16598, 0, 4583) --East Day
+			QuestHelper.MoveTo(41003, 45859, 0, 4583) --East Day
+			Sleep(5)
+		end,
+		[4591] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			--QuestHelper.MoveTo(36348, 41955, 0, 4591) --East Day
+			Sleep(5)
+		end,
+		[4593] = function()
+			LogHelper.LogMessage("[Shinjuku Quests] Assisting with Quest: Check Area!")
+			QuestHelper.MoveTo(24964, 29915, 0, 4593) --East Night
+			Sleep(5)
+		end,
+
 	}
 	for questId, handler in pairs(quests) do
 		if BotHelper.IsQuestOnGoing(questId) then
