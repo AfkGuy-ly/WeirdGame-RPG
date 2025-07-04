@@ -123,7 +123,7 @@ local StatusHelper = {}
 function StatusHelper.StatusFilePath()
 	local user = os.getenv("USERNAME") or os.getenv("USER")
 	local dateStr = SystemHelper.DateKST()
-	local filename = "[" .. dateStr .. "] " .. STATUS_FILE
+	local filename = "[" .. dateStr .. "][" .. CONFIG_FILE .. "] "  .. STATUS_FILE
 	return "C:\\Users\\" .. user .. "\\Documents\\Nen\\" .. filename
 end
 
@@ -371,9 +371,11 @@ function BotHelper.HighestEvolutionPossible()
 	if digimon:Type() == 31006 then --Renamon
 		AutoEvoToggleUseEvoDigimonID(true)
 		AutoEvoSetEvoDigimonID(67003) -- Sakuya Awaken
-	else if (level >= 41) then
+	elseif digimon:Type() == 33001 then --Shoutmon
+		AutoEvoToggleUseEvoDigimonID(true)
+		AutoEvoSetEvoDigimonID(71125) -- X7
+	elseif (digimon:Level() >= 41) then
 			AutoEvoSetEvoType(6)--Mega
-		end
 	end
 	AutoEvoToggle(true)
 	--AutoFarmSetUseSkill(0, 1)--Use F1
@@ -979,17 +981,11 @@ function EventQuest.CheckProgress()
 	return allCompleted
 end
 
----------------------------------------------
--- 🔹 Main Function Section
----------------------------------------------
-function Cleanup()
-	UtilityHelper.SafeCall(BotHelper.AutoFarmToggle, false)
-	UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, false)
-	UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
-end
 
-
-function main()
+---------------------------------------------
+-- 🔹 Features Section
+---------------------------------------------
+function FeatureAutoQuests(TamerLevel)
 	local questGroups = {
 		{
 			name = "[Daily Event]",
@@ -1042,40 +1038,72 @@ function main()
 		--	checkFn = EventQuest.CheckProgress,
 		--},
 	}
+	local currentGroupIndex = 1
+	local group = questGroups[currentGroupIndex]
+	local logStates = {}
+	while ScriptRun() do
+		if currentGroupIndex > #questGroups then
+			LogHelper.LogMessage("All quests are completed. Stopping script.")
+			break
+		end
+		group = questGroups[currentGroupIndex]
+		local groupName = group.name
+		if TamerLevel < group.tamerLevel then
+			if logStates[groupName] ~= "skipped" then
+				LogHelper.LogMessage(groupName .. ": Tamer level is below " .. group.tamerLevel .. ". Skipping.")
+				logStates[groupName] = "skipped"
+			end
+			currentGroupIndex = currentGroupIndex + 1
+		else
+			local completed = group.checkFn()
+			if completed then
+				if logStates[groupName] ~= "completed" then
+					LogHelper.LogMessage(groupName .. ": Quests Are Completed!")
+					logStates[groupName] = "completed"
+				end
+				currentGroupIndex = currentGroupIndex + 1
+			else
+				if logStates[groupName] ~= "ongoing" then
+					LogHelper.LogMessage(groupName .. ": Quests Ongoing!")
+					logStates[groupName] = "ongoing"
+				end
+			end
+		end
+		Sleep(15)
+	end
+end
+
+function FeatureCleanUpInventory()
+
+end
+
+---------------------------------------------
+-- 🔹 Main Function Section
+---------------------------------------------
+function Cleanup()
+	UtilityHelper.SafeCall(BotHelper.AutoFarmToggle, false)
+	UtilityHelper.SafeCall(BotHelper.AutoBoxToggle, false)
+	UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, false)
+end
+
+
+function main()
 	while ScriptRun() do
 		for _, account in ipairs(ACCOUNTS_LIST) do
 			BotHelper.SwitchAccount(account)
 			for _, tamerIndex in ipairs(account.tamers) do
-				local currentGroupIndex = 1
-				local group = questGroups[currentGroupIndex]
 				if (tamerIndex ~= account.tamers[1]) then
 					BotHelper.SwitchTamer(tamerIndex)
 				end
 				if UtilityHelper.WaitForMap() then
-					Sleep(5)
 					local tamer = BotHelper.GetTamer()
 					local digimon = BotHelper.GetDigimon()
 					local level = tamer:Level()
+					Sleep(5)
 					BotHelper.HighestEvolutionPossible()
-					while ScriptRun() do
-						if currentGroupIndex > #questGroups then
-							LogHelper.LogMessage("All quests are completed. Stopping script.")
-							break
-						end
-						if level < group.tamerLevel then
-							LogHelper.LogMessage(group.name .. ": Tamer level is below " .. group.tamerLevel .. ". skipping.")
-							currentGroupIndex = currentGroupIndex + 1
-						else
-							local completed = group.checkFn()
-							if completed then
-								LogHelper.LogMessage(group.name .. ": Quests Are Completed!")
-								currentGroupIndex = currentGroupIndex + 1
-							else
-								LogHelper.LogMessage(group.name .. ": Quests Ongoing!")
-							end
-						end
-						Sleep(15)
-					end
+					--Automation
+					FeatureAutoQuests(level)
+					--
 					BotHelper.UpdateTamerStatus(account.username, tamerIndex)
 					Cleanup()
 				end
