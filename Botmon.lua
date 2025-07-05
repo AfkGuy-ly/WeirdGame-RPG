@@ -52,7 +52,7 @@ function JsonHelper.Encode(value)
 	local function jsonEncode(val)
 		local t = type(val)
 		if t == "string" then
-			return '"' .. JsonHelper.EscapeStr(val) .. '"'
+			return '"' .. val .. '"'
 		elseif t == "number" or t == "boolean" then
 			return tostring(val)
 		elseif t == "table" then
@@ -218,16 +218,16 @@ end
 function BotHelper.SwitchAccount(account)
 	logInfo("Switching Account: " .. account.username)
 	ConfigHelper.Update({
-		Server = account.Server,
+		Server = account.server,
 		Username = account.username,
 		Password = account.password,
 		Password2 = account.otp,
 		TamerSlot = account.tamers[1],
 	})
 	LoadBotConfig(CONFIG_FILE)
-	AutoLoginToggle(true)
 	GoToLoginScreen()
 	Sleep(1)
+	AutoLoginToggle(true)
 	while ScriptRun() and (IsLoginScreen() or IsSecondPasswordScreen() or not IsInMap()) do
 		--log("Waiting For Login: " .. tostring(IsLoginScreen()) .. " Otp: " .. tostring(IsSecondPasswordScreen()) .. " Map: " .. tostring(IsInMap()))
 		Sleep(3)
@@ -243,6 +243,7 @@ function BotHelper.SwitchTamer(Slot)
 	LoadBotConfig(CONFIG_FILE)
 	GoToServerSelection()
 	Sleep(1)
+	AutoLoginToggle(true)
 	while ScriptRun() and (IsServerSelectionScreen() or IsChararacterSelectionScreen() or not IsInMap()) do
 		--log("Waiting For Server: " .. tostring(IsServerSelectionScreen()) .. " Tamer: " .. tostring(IsChararacterSelectionScreen()) .. " Map: " .. tostring(IsInMap()))
 		Sleep(3)
@@ -288,6 +289,27 @@ end
 
 function BotHelper.MoveTo(x, y)
 	return GoToPosition(x, y)
+end
+
+function BotHelper.GoToMap(MapId)
+	local waited = 0
+	local maxWait = 10
+	while ScriptRun() and (GetMapID() ~= MapId) and (not BotHelper.IsInMap()) and (waited < maxWait) do
+		LogHelper.LogMessage("Waiting for map... (Current: " .. tostring(GetMapID()) .. ", Target: " .. MapId .. ")")
+		Sleep(3)
+		waited = waited + 1
+	end
+end
+
+function UtilityHelper.WaitForMap(maxWait)
+	local waited = 0
+	maxWait = maxWait or 10
+	while ScriptRun() and not BotHelper.IsInMap() and waited < maxWait do
+		LogHelper.LogMessage("Waiting for map to load...")
+		Sleep(3)
+		waited = waited + 1
+	end
+	return BotHelper.IsInMap()
 end
 
 function BotHelper.AutoFarmClearMonsters()
@@ -366,12 +388,60 @@ function BotHelper.log(Message)
 	return log(Message)
 end
 
+function BotHelper.UseAnyInventoryExpansion()
+	local expansionItemIds = { 5507, 6507, 9007 }
+	local used = false
+	AutoExpansionToggle(false)
+	for _, itemId in ipairs(expansionItemIds) do
+		if GetItemQuantity(itemId) > 0 and IsInMap() then
+			AutoExpansionToggle(true)
+			AutoExpansionSetExpansionID(itemId)
+			used = true
+			Sleep(1)
+		end
+	end
+	return used
+end
+
+function BotHelper.UseAnyWarehouseExpansion()
+	local expansionItemIds = { 5508, 6508, 9008 }
+	local used = false
+	AutoExpansionToggle(false)
+	for _, itemId in ipairs(expansionItemIds) do
+		if GetItemQuantity(itemId) > 0 and IsInMap() then
+			AutoExpansionToggle(true)
+			AutoExpansionSetExpansionID(itemId)
+			used = true
+			Sleep(1)
+		end
+	end
+	return used
+end
+
+function BotHelper.UseAnyArchiveExpansion()
+	local expansionItemIds = { 5004, 6004, 9006, 9413, 10250, 10251 }
+	local used = false
+	AutoExpansionToggle(false)
+	for _, itemId in ipairs(expansionItemIds) do
+		if GetItemQuantity(itemId) > 0 and IsInMap() then
+			AutoExpansionToggle(true)
+			AutoExpansionSetExpansionID(itemId)
+			Sleep(1)
+			used = true
+		end
+	end
+	return used
+end
+
 function BotHelper.HighestEvolutionPossible()
 	local digimon = GetDigimon();
 	if digimon:Type() == 31006 then --Renamon
 		AutoEvoToggleUseEvoDigimonID(true)
 		AutoEvoSetEvoDigimonID(67003) -- Sakuya Awaken
 	elseif digimon:Type() == 33001 then --Shoutmon
+		AutoEvoToggleUseEvoDigimonID(true)
+		AutoEvoSetEvoDigimonID(71125) -- X7
+	elseif digimon:Type() == 43003 then --Mailbirdamon
 		AutoEvoToggleUseEvoDigimonID(true)
 		AutoEvoSetEvoDigimonID(71125) -- X7
 	elseif (digimon:Level() >= 41) then
@@ -575,6 +645,48 @@ function QuestHelper.EnterDG(Id)
 
 end
 
+---------------------------------------------
+-- 🔹 JumpQuest Functions Section
+---------------------------------------------
+local JumpQuest = {}
+local function _JumpHandleQuest()
+	local quests = {
+		[7015] = function()
+			LogHelper.LogMessage("[FILE ISLAND] Assisting with Quest 7015: Wake Up, Leomon!")
+			QuestHelper.SummonBoss(154003, 99100, nil, nil, true)
+			Sleep(5)
+		end,
+		[7034] = function()
+			LogHelper.LogMessage("[FILE ISLAND] Assisting with Quest 7034: Final Battle: Monochromon!")
+			QuestHelper.SummonBoss(154004, 99101, nil, nil, true)
+			Sleep(5)
+		end,
+	}
+	for questId, handler in pairs(quests) do
+		if BotHelper.IsQuestOnGoing(questId) then
+			handler()
+		end
+	end
+end
+
+function JumpQuest.CheckProgress()
+	local allCompleted = true
+	for _, questId in ipairs(QUEST_JUMP_TUTORIAL) do
+		if not BotHelper.IsQuestComplete(questId) then
+			allCompleted = false
+			if UtilityHelper.WaitForMap() then
+				UtilityHelper.SafeCall(BotHelper.AutoQuestAddQuest, questId)
+			end
+		end
+	end
+	if UtilityHelper.WaitForMap() then
+		UtilityHelper.SafeCall(BotHelper.AutoQuestToggle, true)
+	end
+	if not allCompleted then
+		_JumpHandleQuest()
+	end
+	return allCompleted
+end
 
 ---------------------------------------------
 -- 🔹 FileIslandQuest Functions Section
@@ -992,6 +1104,11 @@ function FeatureAutoQuests(TamerLevel)
 			tamerLevel = 1,
 			checkFn = EventQuest.CheckProgress,
 		},
+		{
+			name = "[Jump Quest]",
+			tamerLevel = 1,
+			checkFn = JumpQuest.CheckProgress,
+		},
 		--{
 		--	name = "[Weekly Event]",
 		--	tamerLevel = 140,
@@ -1069,14 +1186,123 @@ function FeatureAutoQuests(TamerLevel)
 				end
 			end
 		end
+		CheckUp()
 		Sleep(15)
 	end
 end
 
-function FeatureCleanUpInventory()
-
+function GetFirstItemWithQuantity(ListOfItems)
+	for _, itemId in ipairs(ListOfItems) do
+		local quantity = GetItemQuantity(itemId)
+		if quantity > 0 then
+			if quantity < 100 then
+				logInfo("Low on Item: " .. itemId .. " Quantity left " .. quantity)
+			end
+			return itemId
+		end
+	end
+	return 0
 end
 
+local ITEM_FOOD_KFC = { 4810, 6810, 9766, 71103 }
+function FeatureConfigAutoHeal()
+	-- KFC 4810, 6810, 9766, 71103
+	-- Double KFC 71111, 71112,
+	-- GoldB 5503 5820 6503 9013 9715
+	-- Sweet GoldB 6545 6547
+	-- Organic GoldB 79094 79096
+	--Checks For Certain Items & Flags Account/Tamer For Refill
+	--Minimum is KFC @ 50%
+	--Special Cake @ 35%
+	local lowRankHeal = { 4810, 6810, 9766, 71103, 71111, 71112, 5503, 5820, 6503, 9013, 9715,  }
+	local midRankHeal = { 6545, 6547, 79094, 79096,  }
+	local xaiHeal = { 71591, 71592, 71593, 71594, 75449, 128547, 129702  }
+	ConfigHelper.Update({
+		TamerHP_1 = true,
+		TamerHPPerc_1 = 50,
+		TamerHPQuickSlot_1 = GetFirstItemWithQuantity(lowRankHeal),
+		--
+		TamerHP_2 = false,
+		TamerHPPerc_2 = 25,
+		TamerHPQuickSlot_2 = 0,
+		--
+		TamerDS_1 = true,
+		TamerDSPerc_1 = 25,
+		TamerDSQuickSlot_1 = GetFirstItemWithQuantity(lowRankHeal),
+		--
+		TamerDS_2 = false,
+		TamerDSPerc_2 = 90,
+		TamerDSQuickSlot_2 = 0,
+		--
+		DigiHP_1 = true,
+		DigiHPPerc_1 = 60,
+		DigiHPQuickSlot_1 = GetFirstItemWithQuantity(lowRankHeal),
+		--
+		DigiHP_2 = false,
+		DigiHPPerc_2 = 90,
+		DigiHPQuickSlot_2 = 0,
+		--
+		DigiDS_1 = true,
+		DigiDSPerc_1 = 35,
+		DigiDSQuickSlot_1 = GetFirstItemWithQuantity(lowRankHeal),
+		--
+		DigiDS_2 = false,
+		DigiDSPerc_2 = 90,
+		DigiDSQuickSlot_2 = 0,
+		--
+		TamerXG = false,
+		TamerXGQuickSlot = GetFirstItemWithQuantity(xaiHeal),
+		TamerXGVal = 75,
+		--
+		TamerFatigue = false,
+		FatigueLogout = false,
+		FatigueCity = 0,
+		FatigueCityPerc = 90,
+		FatiguePerc = 90,
+		FatigueQuickSlot = 0,
+	})
+	Sleep(1)
+	LoadBotConfig(CONFIG_FILE)
+end
+
+function FeatureCleanUpInventory()
+	--Check For InventoryExpansion WarehouseExpansion ArchiveExpansion
+	--Checks For TrashItems & Disposes Of Them
+	-- 154029 Basic AT Seal Box (Must Be Used)
+	local totalWaitTime = 5 * 60
+	local waitedTime = 0
+	while ScriptRun() and waitedTime < totalWaitTime do
+		BotHelper.UseAnyInventoryExpansion()
+		BotHelper.UseAnyWarehouseExpansion()
+		BotHelper.UseAnyArchiveExpansion()
+		Sleep(15)
+		waitedTime = waitedTime + 15
+	end
+end
+
+function FeatureLogItemQuantity()
+	--Checks For Certain Items & Flags Account/Tamer For Refill
+end
+
+function FeatureWaitForMail(NumberOfMinutes)
+	local totalWaitTime = NumberOfMinutes * 60
+	local waitedTime = 0
+	while ScriptRun() and waitedTime < totalWaitTime do
+		BotHelper.UseAnyInventoryExpansion()
+		BotHelper.UseAnyWarehouseExpansion()
+		BotHelper.UseAnyArchiveExpansion()
+		Sleep(15)
+		waitedTime = waitedTime + 15
+	end
+end
+
+function CheckUp()
+	FeatureConfigAutoHeal()
+	BotHelper.HighestEvolutionPossible()
+	CheckInventoryExpansion()
+	CheckWarehouseExpansion()
+	CheckArchiveExpansion()
+end
 ---------------------------------------------
 -- 🔹 Main Function Section
 ---------------------------------------------
@@ -1100,10 +1326,7 @@ function main()
 					local digimon = BotHelper.GetDigimon()
 					local level = tamer:Level()
 					Sleep(5)
-					BotHelper.HighestEvolutionPossible()
-					--Automation
 					FeatureAutoQuests(level)
-					--
 					BotHelper.UpdateTamerStatus(account.username, tamerIndex)
 					Cleanup()
 				end
